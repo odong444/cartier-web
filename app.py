@@ -36,26 +36,13 @@ def add_log(msg):
     print(log_entry)
 
 def get_chrome_driver():
-    """ChromeDriver 생성 (Railway 환경)"""
+    """ChromeDriver 생성"""
     options = Options()
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
     options.add_argument("--disable-javascript")
-    
-    # Railway/Linux 환경에서 Chromium 경로 설정
-    chromium_paths = [
-        "/usr/bin/chromium-browser",
-        "/usr/bin/chromium",
-        "/usr/bin/google-chrome",
-        "/usr/bin/chrome"
-    ]
-    
-    for path in chromium_paths:
-        if os.path.exists(path):
-            options.binary_location = path
-            break
     
     # 이미지/CSS 차단
     prefs = {
@@ -65,26 +52,7 @@ def get_chrome_driver():
     options.add_experimental_option("prefs", prefs)
     
     try:
-        # ChromeDriver 경로 찾기
-        driver_paths = [
-            "/usr/bin/chromedriver",
-            "/usr/local/bin/chromedriver",
-            "chromedriver"
-        ]
-        
-        driver_path = None
-        for path in driver_paths:
-            if os.path.exists(path):
-                driver_path = path
-                break
-        
-        if driver_path:
-            from selenium.webdriver.chrome.service import Service
-            service = Service(driver_path)
-            return webdriver.Chrome(service=service, options=options)
-        else:
-            # 경로 없으면 기본값 시도
-            return webdriver.Chrome(options=options)
+        return webdriver.Chrome(options=options)
     except Exception as e:
         add_log(f"ChromeDriver 오류: {str(e)[:100]}")
         raise
