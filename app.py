@@ -43,7 +43,19 @@ def get_chrome_driver():
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
     options.add_argument("--disable-javascript")
-    options.binary_location = "/usr/bin/chromium-browser"  # Railway Chromium 경로
+    
+    # Railway/Linux 환경에서 Chromium 경로 설정
+    chromium_paths = [
+        "/usr/bin/chromium-browser",
+        "/usr/bin/chromium",
+        "/usr/bin/google-chrome",
+        "/usr/bin/chrome"
+    ]
+    
+    for path in chromium_paths:
+        if os.path.exists(path):
+            options.binary_location = path
+            break
     
     # 이미지/CSS 차단
     prefs = {
@@ -52,7 +64,30 @@ def get_chrome_driver():
     }
     options.add_experimental_option("prefs", prefs)
     
-    return webdriver.Chrome(options=options)
+    try:
+        # ChromeDriver 경로 찾기
+        driver_paths = [
+            "/usr/bin/chromedriver",
+            "/usr/local/bin/chromedriver",
+            "chromedriver"
+        ]
+        
+        driver_path = None
+        for path in driver_paths:
+            if os.path.exists(path):
+                driver_path = path
+                break
+        
+        if driver_path:
+            from selenium.webdriver.chrome.service import Service
+            service = Service(driver_path)
+            return webdriver.Chrome(service=service, options=options)
+        else:
+            # 경로 없으면 기본값 시도
+            return webdriver.Chrome(options=options)
+    except Exception as e:
+        add_log(f"ChromeDriver 오류: {str(e)[:100]}")
+        raise
 
 def check_stock(url):
     """재고 확인"""
